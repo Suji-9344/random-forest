@@ -20,41 +20,57 @@ st.subheader("Dataset Preview")
 st.write(df.head())
 st.write("Dataset Shape:", df.shape)
 
-# 🚑 CASE: ONLY ONE COLUMN DATASET
+# ===============================
+# CASE: ONLY ONE COLUMN DATASET
+# ===============================
 if df.shape[1] == 1:
     st.warning("⚠ Only one column found. Using automatic dummy feature.")
 
-    # create dummy feature
-    X = np.arange(len(df)).reshape(-1, 1)
+    # Target
     y = df.iloc[:, 0]
 
-    # encode target if needed
     if y.dtype == "object":
         y = LabelEncoder().fit_transform(y.astype(str))
+
+    # Dummy feature for training
+    X = np.arange(len(y)).reshape(-1, 1)
 
     X_train, X_test, y_train, y_test = train_test_split(
         X, y, test_size=0.2, random_state=42
     )
 
-    model = RandomForestClassifier(n_estimators=100, random_state=42)
+    model = RandomForestClassifier(
+        n_estimators=100,
+        random_state=42
+    )
     model.fit(X_train, y_train)
 
     st.success("✅ Random Forest model trained successfully!")
 
-    # prediction using fixed dummy input
-    dummy_input = np.array([[0]])
-    prediction = model.predict(dummy_input)[0]
-    probability = model.predict_proba(dummy_input)
+    # ✅ USER INPUT (NO DEFAULT)
+    st.sidebar.header("Enter Input Value")
 
-    st.subheader("Prediction Result")
-    st.write("Predicted Class:", prediction)
-    st.write("Prediction Probability:")
-    st.write(probability)
+    user_value = st.sidebar.number_input(
+        "Dummy Feature Value",
+        step=1.0
+    )
 
-    st.info("ℹ Sidebar inputs are disabled because dataset has no real features.")
+    if st.button("Predict"):
+        user_input = np.array([[user_value]])
+        prediction = model.predict(user_input)[0]
+        probability = model.predict_proba(user_input)
+
+        st.subheader("Prediction Result")
+        st.write("Predicted Class:", prediction)
+        st.write("Prediction Probability:")
+        st.write(probability)
+
+    st.info("ℹ Since dataset has only one column, prediction is based on user-entered dummy value.")
     st.stop()
 
-# 🟢 NORMAL CASE (2+ columns)
+# ===============================
+# NORMAL CASE (2+ COLUMNS)
+# ===============================
 X = df.iloc[:, :-1]
 y = df.iloc[:, -1]
 
@@ -69,7 +85,10 @@ X_train, X_test, y_train, y_test = train_test_split(
     X, y, test_size=0.2, random_state=42
 )
 
-model = RandomForestClassifier(n_estimators=100, random_state=42)
+model = RandomForestClassifier(
+    n_estimators=100,
+    random_state=42
+)
 model.fit(X_train, y_train)
 
 st.success("✅ Random Forest model trained successfully!")
@@ -78,7 +97,7 @@ st.sidebar.header("Enter Input Values")
 
 input_data = {}
 for col in X.columns:
-    input_data[col] = st.sidebar.number_input(col, value=float(X[col].mean()))
+    input_data[col] = st.sidebar.number_input(col)
 
 input_df = pd.DataFrame([input_data])
 
