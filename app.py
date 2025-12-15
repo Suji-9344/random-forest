@@ -1,5 +1,6 @@
 import streamlit as st
 import pandas as pd
+import numpy as np
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import LabelEncoder
@@ -8,7 +9,6 @@ st.set_page_config(page_title="Random Forest App")
 
 st.title("🌳 Random Forest Prediction App")
 
-# Load dataset
 @st.cache_data
 def load_data():
     return pd.read_pickle("predictions_df.pkl")
@@ -19,30 +19,24 @@ st.subheader("Dataset Preview")
 st.write(df.head())
 st.write("Dataset Shape:", df.shape)
 
-# 🚨 SAFETY CHECK
-if df.shape[1] < 2:
-    st.error("❌ Dataset must have at least ONE feature column and ONE target column.")
-    st.stop()
+# 🚑 AUTO-FIX: If only one column exists
+if df.shape[1] == 1:
+    st.warning("⚠ Only one column found. Adding a dummy feature automatically.")
+    df["dummy_feature"] = np.arange(len(df))
 
 # Target = last column
 target_column = df.columns[-1]
+X = df.iloc[:, :-1]
+y = df.iloc[:, -1]
 
-X = df.iloc[:, :-1]   # all except last column
-y = df.iloc[:, -1]    # last column only
-
-# Encode categorical features
+# Encode features
 for col in X.columns:
     if X[col].dtype == "object":
         X[col] = LabelEncoder().fit_transform(X[col].astype(str))
 
-# Encode target if needed
+# Encode target
 if y.dtype == "object":
     y = LabelEncoder().fit_transform(y.astype(str))
-
-# 🚨 CHECK AGAIN AFTER ENCODING
-if X.shape[1] == 0:
-    st.error("❌ No usable feature columns found after preprocessing.")
-    st.stop()
 
 # Train-test split
 X_train, X_test, y_train, y_test = train_test_split(
