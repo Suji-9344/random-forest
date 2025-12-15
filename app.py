@@ -19,13 +19,12 @@ st.subheader("Dataset Preview")
 st.write(df.head())
 st.write("Dataset Shape:", df.shape)
 
-# 🚑 AUTO-FIX: If only one column exists
+# 🚑 AUTO-FIX: if only one column
 if df.shape[1] == 1:
     st.warning("⚠ Only one column found. Adding a dummy feature automatically.")
     df["dummy_feature"] = np.arange(len(df))
 
 # Target = last column
-target_column = df.columns[-1]
 X = df.iloc[:, :-1]
 y = df.iloc[:, -1]
 
@@ -56,9 +55,17 @@ st.success("✅ Random Forest model trained successfully!")
 st.sidebar.header("Enter Input Values")
 
 input_data = {}
+
 for col in X.columns:
+    mean_val = X[col].mean()
+
+    # 🔒 FIX: handle NaN / invalid mean
+    if pd.isna(mean_val) or np.isinf(mean_val):
+        mean_val = 0.0
+
     input_data[col] = st.sidebar.number_input(
-        col, value=float(X[col].mean())
+        label=col,
+        value=float(mean_val)
     )
 
 input_df = pd.DataFrame([input_data])
@@ -66,9 +73,9 @@ input_df = pd.DataFrame([input_data])
 # Prediction
 if st.button("Predict"):
     prediction = model.predict(input_df)[0]
-    proba = model.predict_proba(input_df)
+    probability = model.predict_proba(input_df)
 
     st.subheader("Prediction Result")
     st.write("Predicted Class:", prediction)
     st.write("Prediction Probability:")
-    st.write(proba)
+    st.write(probability)
