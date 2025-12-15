@@ -19,21 +19,21 @@ st.subheader("Dataset Preview")
 st.write(df.head())
 st.write("Dataset Shape:", df.shape)
 
-# 🚑 AUTO-FIX: if only one column
+# 🚑 AUTO-FIX: if dataset has only ONE column
 if df.shape[1] == 1:
     st.warning("⚠ Only one column found. Adding a dummy feature automatically.")
     df["dummy_feature"] = np.arange(len(df))
 
-# Target = last column
+# Features & target
 X = df.iloc[:, :-1]
 y = df.iloc[:, -1]
 
-# Encode features
+# Encode feature columns safely
 for col in X.columns:
     if X[col].dtype == "object":
         X[col] = LabelEncoder().fit_transform(X[col].astype(str))
 
-# Encode target
+# Encode target if needed
 if y.dtype == "object":
     y = LabelEncoder().fit_transform(y.astype(str))
 
@@ -42,7 +42,7 @@ X_train, X_test, y_train, y_test = train_test_split(
     X, y, test_size=0.2, random_state=42
 )
 
-# Train model
+# Train Random Forest
 model = RandomForestClassifier(
     n_estimators=100,
     random_state=42
@@ -59,12 +59,12 @@ input_data = {}
 for col in X.columns:
     mean_val = X[col].mean()
 
-    # 🔒 FIX: handle NaN / invalid mean
+    # 🔒 ABSOLUTE SAFETY
     if pd.isna(mean_val) or np.isinf(mean_val):
         mean_val = 0.0
 
-    input_data[col] = st.sidebar.number_input(
-        label=col,
+    input_data[str(col)] = st.sidebar.number_input(
+        label=str(col),      # ✅ FORCE STRING
         value=float(mean_val)
     )
 
@@ -77,5 +77,4 @@ if st.button("Predict"):
 
     st.subheader("Prediction Result")
     st.write("Predicted Class:", prediction)
-    st.write("Prediction Probability:")
-    st.write(probability)
+    st.write("Prediction Probab
