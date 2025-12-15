@@ -49,7 +49,7 @@ def main():
 
     # 8. Analyze prediction distribution (optional, but good for app output)
     print("\nDistribution of Predictions:")
-    display(predictions_df[0].value_counts())
+    print(predictions_df[0].value_counts()) # Changed display() to print()
 
 
 if __name__ == "__main__":
