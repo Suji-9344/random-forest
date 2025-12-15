@@ -23,7 +23,6 @@ st.write("Dataset Shape:", df.shape)
 # CASE: ONLY ONE COLUMN DATASET
 # ===============================
 if df.shape[1] == 1:
-    st.warning("⚠ Only one column found. Using automatic dummy feature.")
 
     y = df.iloc[:, 0]
 
@@ -45,7 +44,7 @@ if df.shape[1] == 1:
 
     st.success("✅ Random Forest model trained successfully!")
 
-    # USER INPUT (no default)
+    # USER INPUT
     st.sidebar.header("Enter Input Value")
 
     user_value = st.sidebar.number_input(
@@ -106,4 +105,3 @@ if st.button("Predict"):
     st.write("Predicted Class:", prediction)
     st.write("Prediction Probability:")
     st.write(probability)
-
