@@ -1,4 +1,3 @@
-
 import streamlit as st
 import pandas as pd
 import numpy as np
@@ -26,13 +25,12 @@ st.write("Dataset Shape:", df.shape)
 if df.shape[1] == 1:
     st.warning("⚠ Only one column found. Using automatic dummy feature.")
 
-    # Target
     y = df.iloc[:, 0]
 
     if y.dtype == "object":
         y = LabelEncoder().fit_transform(y.astype(str))
 
-    # Dummy feature for training
+    # Dummy feature
     X = np.arange(len(y)).reshape(-1, 1)
 
     X_train, X_test, y_train, y_test = train_test_split(
@@ -47,7 +45,7 @@ if df.shape[1] == 1:
 
     st.success("✅ Random Forest model trained successfully!")
 
-    # ✅ USER INPUT (NO DEFAULT)
+    # USER INPUT (no default)
     st.sidebar.header("Enter Input Value")
 
     user_value = st.sidebar.number_input(
@@ -65,7 +63,6 @@ if df.shape[1] == 1:
         st.write("Prediction Probability:")
         st.write(probability)
 
-    st.info("ℹ Since dataset has only one column, prediction is based on user-entered dummy value.")
     st.stop()
 
 # ===============================
@@ -109,3 +106,4 @@ if st.button("Predict"):
     st.write("Predicted Class:", prediction)
     st.write("Prediction Probability:")
     st.write(probability)
+
