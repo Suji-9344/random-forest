@@ -17,25 +17,32 @@ df = load_data()
 
 st.subheader("Dataset Preview")
 st.write(df.head())
+st.write("Dataset Shape:", df.shape)
 
-# Target column (last column)
+# 🚨 SAFETY CHECK
+if df.shape[1] < 2:
+    st.error("❌ Dataset must have at least ONE feature column and ONE target column.")
+    st.stop()
+
+# Target = last column
 target_column = df.columns[-1]
 
-X = df.drop(columns=[target_column])
-y = df[target_column]
+X = df.iloc[:, :-1]   # all except last column
+y = df.iloc[:, -1]    # last column only
 
 # Encode categorical features
-label_encoders = {}
-
 for col in X.columns:
     if X[col].dtype == "object":
-        le = LabelEncoder()
-        X[col] = le.fit_transform(X[col].astype(str))
-        label_encoders[col] = le
+        X[col] = LabelEncoder().fit_transform(X[col].astype(str))
 
 # Encode target if needed
 if y.dtype == "object":
     y = LabelEncoder().fit_transform(y.astype(str))
+
+# 🚨 CHECK AGAIN AFTER ENCODING
+if X.shape[1] == 0:
+    st.error("❌ No usable feature columns found after preprocessing.")
+    st.stop()
 
 # Train-test split
 X_train, X_test, y_train, y_test = train_test_split(
@@ -55,20 +62,19 @@ st.success("✅ Random Forest model trained successfully!")
 st.sidebar.header("Enter Input Values")
 
 input_data = {}
-
 for col in X.columns:
     input_data[col] = st.sidebar.number_input(
-        f"{col}", value=float(X[col].mean())
+        col, value=float(X[col].mean())
     )
 
 input_df = pd.DataFrame([input_data])
 
-# Predict
+# Prediction
 if st.button("Predict"):
     prediction = model.predict(input_df)[0]
-    probability = model.predict_proba(input_df)
+    proba = model.predict_proba(input_df)
 
     st.subheader("Prediction Result")
-    st.write(f"**Predicted Class:** {prediction}")
-    st.write("**Prediction Probability:**")
-    st.write(probability)
+    st.write("Predicted Class:", prediction)
+    st.write("Prediction Probability:")
+    st.write(proba)
